@@ -6,30 +6,31 @@ from app.database import models
 
 async def get_or_create_user(db, telegram_id: int):
     result = await db.execute(
-        select(models.User).where(models.User.telegram_id == telegram_id))
+        select(models.User).where(models.User.telegram_id == telegram_id)
+    )
     user = result.scalars().first()
 
     if not user:
         user = models.User(telegram_id=telegram_id)
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
     return user
 
 
-async def create_conversation(db, user_id: int):
-    conversation = models.Conversation(user_id=user_id)
+async def create_conversation(db, telegram_id: int):
+    conversation = models.Conversation(user_id=telegram_id)
     db.add(conversation)
     await db.commit()
     await db.refresh(conversation)
     return conversation
 
 
-async def get_active_conversation(db, user_id: int):
+async def get_active_conversation(db, telegram_id: int):
     result = await db.execute(
         select(models.Conversation)
         .where(
-            models.Conversation.user_id == user_id,
+            models.Conversation.user_id == telegram_id,
             models.Conversation.end_time == None
         )
     )
@@ -68,6 +69,13 @@ async def update_user_admin_status(db, telegram_id: int, is_admin: bool):
         await db.refresh(user)
     return user
 
+
+async def add_category_to_conversation(db, conversation: models.Conversation, message_text: str):
+    if not conversation.category:
+        conversation.category = "Sample" # заменить на нейронку!
+        await db.commit()
+        await db.refresh(conversation)
+    return conversation
 
 def get_conversation_duration(conversation: models.Conversation):
     if conversation.end_time:

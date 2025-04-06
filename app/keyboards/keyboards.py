@@ -10,7 +10,9 @@ def get_feedback_kb():
         ]
     ])
 
-def get_consultant_kb():
+def get_feedback_options_kb():
     builder = InlineKeyboardBuilder()
+    builder.button(text="🔄 Переспросить", callback_data="reask")
     builder.button(text="👨💻 Консультант", callback_data="request_human")
+    builder.adjust(1)
     return builder.as_markup()
